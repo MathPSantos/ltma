@@ -1,14 +1,14 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-import { Button } from '@/components/ui/button'
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
+} from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -16,8 +16,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Textarea } from '@/components/ui/textarea'
+} from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
+import { useCreateQuestion } from '@/http/use-create-question';
 
 // Esquema de validação no mesmo arquivo conforme solicitado
 const createQuestionSchema = z.object({
@@ -26,12 +27,12 @@ const createQuestionSchema = z.object({
     .min(1, 'Pergunta é obrigatória')
     .min(10, 'Pergunta deve ter pelo menos 10 caracteres')
     .max(500, 'Pergunta deve ter menos de 500 caracteres'),
-})
+});
 
-type CreateQuestionFormData = z.infer<typeof createQuestionSchema>
+type CreateQuestionFormData = z.infer<typeof createQuestionSchema>;
 
 interface QuestionFormProps {
-  roomId: string
+  roomId: string;
 }
 
 export function QuestionForm({ roomId }: QuestionFormProps) {
@@ -40,11 +41,19 @@ export function QuestionForm({ roomId }: QuestionFormProps) {
     defaultValues: {
       question: '',
     },
-  })
+  });
 
-  function handleCreateQuestion(data: CreateQuestionFormData) {
-    // biome-ignore lint/suspicious/noConsole: dev
-    console.log(data, roomId)
+  const { isSubmitting } = form.formState;
+
+  const { mutateAsync: createQuestion } = useCreateQuestion();
+
+  async function handleCreateQuestion({ question }: CreateQuestionFormData) {
+    await createQuestion({
+      roomId,
+      question,
+    });
+
+    form.reset();
   }
 
   return (
@@ -70,6 +79,7 @@ export function QuestionForm({ roomId }: QuestionFormProps) {
                   <FormControl>
                     <Textarea
                       className="min-h-[100px]"
+                      disabled={isSubmitting}
                       placeholder="O que você gostaria de saber?"
                       {...field}
                     />
@@ -79,10 +89,12 @@ export function QuestionForm({ roomId }: QuestionFormProps) {
               )}
             />
 
-            <Button type="submit">Enviar pergunta</Button>
+            <Button disabled={isSubmitting} type="submit">
+              {isSubmitting ? 'Enviando...' : 'Enviar pergunta'}
+            </Button>
           </form>
         </Form>
       </CardContent>
     </Card>
-  )
+  );
 }

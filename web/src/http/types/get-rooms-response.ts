@@ -1,6 +1,6 @@
 export type GetRoomsResponse = Array<{
   id: string;
   name: string;
-  questionsNumber: number;
+  questionsCount: number;
   createdAt: string;
 }>;
